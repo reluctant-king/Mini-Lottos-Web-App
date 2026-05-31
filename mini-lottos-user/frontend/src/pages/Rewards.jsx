@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Bell, Gamepad2, Brain, Building2, Lightbulb, Gift, Sparkles, ChevronRight, DollarSign } from 'lucide-react';
+import { Gamepad2, Brain, Building2, Lightbulb, Gift, Sparkles, DollarSign } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import { useToast } from '../components/Toast';
 import api from '../api/axios';
 
@@ -28,10 +29,10 @@ export default function Rewards() {
     setPlaying(gameId);
     try {
       const res = await api.post('/rewards/play', { gameId });
-      setCoins((c) => c + (res.data.coins || 0));
-      toast(`You earned ${res.data.coins || 0} coins from ${gameName}!`, 'success');
-    } catch (err) {
-      // fallback
+      const earned = res.data.coins || 0;
+      setCoins((c) => c + earned);
+      toast(`You earned ${earned} coins from ${gameName}!`, 'success');
+    } catch {
       const bonus = gameId === 1 ? 3 : gameId === 2 ? 2 : gameId === 3 ? 5 : 2;
       setCoins((c) => c + bonus);
       toast(`You earned ${bonus} coins from ${gameName}!`, 'success');
@@ -43,19 +44,7 @@ export default function Rewards() {
   return (
     <MobileLayout>
       <div className="px-5 pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <button className="p-2 hover:bg-gray-100 rounded-xl">
-            <Menu size={24} className="text-gray-700" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-800">Mini Lottos</h1>
-          <button
-            onClick={() => navigate('/notifications')}
-            className="relative p-2 hover:bg-gray-100 rounded-xl"
-          >
-            <Bell size={22} className="text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
-        </div>
+        <TopHeader title="Mini Lottos" />
 
         <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 shadow-lg mb-6 relative overflow-hidden">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full" />
@@ -132,15 +121,7 @@ export default function Rewards() {
         </button>
       </div>
 
-      <BottomNav
-        active="Games"
-        tabs={[
-          { name: 'Home', path: '/home', icon: 'Home' },
-          { name: 'Games', path: '/rewards', icon: 'Gamepad2' },
-          { name: 'Winners', path: '/results', icon: 'Trophy' },
-          { name: 'Profile', path: '/profile', icon: 'User' },
-        ]}
-      />
+      <BottomNav />
     </MobileLayout>
   );
 }

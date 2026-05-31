@@ -1,58 +1,69 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('ml_user_token'));
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (token) {
-      api.get('/auth/me')
-        .then((res) => setUser(res.data.user || res.data))
-        .catch(() => {
-          localStorage.removeItem('ml_user_token');
-          setToken(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
+  const initAuth = useCallback(async () => {
+    const token = localStorage.getItem('ml_user_token');
+    if (!token) {
       setLoading(false);
+      return;
     }
-  }, [token]);
-
-  const sendOtp = async (phone) => {
-    const res = await api.post('/auth/send-otp', { phone });
-    return res.data;
-  };
-
-  const verifyOtp = async (phone, code) => {
-    const res = await api.post('/auth/verify-otp', { phone, code });
-    const t = res.data.token;
-    localStorage.setItem('ml_user_token', t);
-    setToken(t);
-    setUser(res.data.user || res.data);
-    return res.data;
-  };
-
-  const logout = () => {
-    localStorage.removeItem('ml_user_token');
-    setToken(null);
-    setUser(null);
-  };
-
-  const refreshUser = async () => {
     try {
       const res = await api.get('/auth/me');
       setUser(res.data.user || res.data);
-    } catch (e) {
-      console.error('refresh user failed', e);
+    } catch {
+      localStorage.removeItem('ml_user_token');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  const login = useCallback((token, userData) => {
+    localStorage.setItem('ml_user_token', token);
+    setUser(userData);
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('ml_user_token');
+    setUser(null);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const { data } = await api.get('/auth/me');
+      const userData = data.user || data;
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      console.error('Refresh user failed:', err);
+      return null;
+    }
+  }, []);
+
+  const sendOtp = useCallback(async (phone) => {
+    const res = await api.post('/auth/send-otp', { phone });
+    return res.data;
+  }, []);
+
+  const verifyOtp = useCallback(async (phone, code) => {
+    const res = await api.post('/auth/verify-otp', { phone, code });
+    if (res.data.token && res.data.user) {
+      login(res.data.token, res.data.user);
+    }
+    return res.data;
+  }, [login]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, sendOtp, verifyOtp, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser, sendOtp, verifyOtp }}>
       {children}
     </AuthContext.Provider>
   );

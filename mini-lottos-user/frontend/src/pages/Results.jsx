@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, MapPin, ShoppingCart, Clock, Eye, Award, ChevronRight, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Clock, Eye, Award, ChevronRight, TrendingUp } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
-import { useAuth } from '../context/AuthContext';
+import TopHeader from '../components/TopHeader';
 
 export default function Results() {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const districts = [
     { name: 'Kochi', amount: '₹12,50,000', highlight: true },
@@ -27,27 +25,7 @@ export default function Results() {
   return (
     <MobileLayout>
       <div className="px-5 pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-            </div>
-            <div>
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <MapPin size={12} />
-                <span>Kochi, Kerala</span>
-              </div>
-              <p className="font-bold text-gray-800">Good Evening</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/notifications')}
-            className="relative p-2 hover:bg-gray-100 rounded-xl"
-          >
-            <Bell size={22} className="text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
-        </div>
+        <TopHeader title="Good Evening" />
 
         <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 mb-6 shadow-lg relative overflow-hidden">
           <div className="absolute right-4 top-4 opacity-20">
@@ -63,14 +41,7 @@ export default function Results() {
             return (
               <button
                 key={i}
-                onClick={() => {
-                  if (item.label.includes('Buy') || item.label.includes('Check')) {
-                    const toast = () => {};
-                    navigate(item.path);
-                  } else {
-                    navigate(item.path);
-                  }
-                }}
+                onClick={() => navigate(item.path)}
                 className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-left hover:shadow-md transition-shadow"
               >
                 <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-3`}>
@@ -115,7 +86,7 @@ export default function Results() {
         </div>
       </div>
 
-      <BottomNav active="Home" badge={false} />
+      <BottomNav />
     </MobileLayout>
   );
 }

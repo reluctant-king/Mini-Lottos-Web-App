@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DollarSign, Brain, Gamepad2, Lightbulb, ShoppingCart, Minus, Plus } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import { useToast } from '../components/Toast';
 import api from '../api/axios';
 
@@ -33,8 +34,7 @@ export default function RewardsBalance() {
       await api.post('/rewards/redeem', { coins: redeemAmount });
       setCoins((c) => c - redeemAmount);
       toast(`Redeemed ${redeemAmount} coins for ₹${redeemAmount}!`, 'success');
-    } catch (err) {
-      // fallback
+    } catch {
       setCoins((c) => c - redeemAmount);
       toast(`Redeemed ${redeemAmount} coins for ₹${redeemAmount}!`, 'success');
     } finally {
@@ -45,11 +45,7 @@ export default function RewardsBalance() {
   return (
     <MobileLayout>
       <div className="px-5 pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div />
-          <h1 className="text-lg font-bold text-gray-800">Rewards</h1>
-          <div className="w-8" />
-        </div>
+        <TopHeader title="Rewards" />
 
         <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 shadow-lg mb-6">
           <div className="flex items-center gap-3">
@@ -134,15 +130,7 @@ export default function RewardsBalance() {
         </div>
       </div>
 
-      <BottomNav
-        active="Rewards"
-        tabs={[
-          { name: 'Home', path: '/home', icon: 'Home' },
-          { name: 'Lottos', path: '/results', icon: 'Ticket' },
-          { name: 'Rewards', path: '/rewards/balance', icon: 'Gift' },
-          { name: 'Profile', path: '/profile', icon: 'User' },
-        ]}
-      />
+      <BottomNav />
     </MobileLayout>
   );
 }

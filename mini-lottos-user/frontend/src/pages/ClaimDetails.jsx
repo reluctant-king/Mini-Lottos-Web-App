@@ -1,20 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, MapPin, User, Check } from 'lucide-react';
+import { ArrowLeft, Phone, MapPin, User } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import { useToast } from '../components/Toast';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 export default function ClaimDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
   const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/tickets/${id}`)
-      .then((res) => setTicket(res.data.ticket || res.data))
-      .catch(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get(`/tickets/${id}`);
+        const t = res.data.ticket || res.data;
+        let agent = { name: 'Your Agent', phone: '+91 9876543210', location: 'Local Office' };
+        if (t.agentId) {
+          try {
+            const agentRes = await fetch(`http://localhost:5002/api/auth/me`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('ml_agent_token')}` }
+            });
+          } catch {}
+        }
+        if (user?.agentId) {
+          agent.name = 'Assigned Agent';
+          agent.phone = '+91 9876543210';
+        }
+        t.agent = agent;
+        setTicket(t);
+      } catch {
         setTicket({
           _id: id,
           gameName: 'Super Daily',
@@ -26,14 +45,29 @@ export default function ClaimDetails() {
           prize: 50000,
           agent: { name: 'Sunil Kumar', phone: '+91 9876543210', location: 'Kochi, Kerala' },
         });
-      });
-  }, [id]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, user]);
 
-  if (!ticket) {
+  if (loading) {
     return (
       <MobileLayout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <MobileLayout>
+        <div className="p-6 text-center">
+          <p className="text-gray-500">Ticket not found</p>
+          <button onClick={() => navigate('/tickets')} className="text-orange-500 mt-2">Go back</button>
         </div>
       </MobileLayout>
     );
@@ -52,7 +86,7 @@ export default function ClaimDetails() {
         <div className="bg-gradient-to-r from-yellow-400 to-green-500 rounded-2xl p-6 shadow-lg mb-6">
           <p className="text-white/80 text-sm font-medium mb-1">Prize Amount</p>
           <p className="text-4xl font-extrabold text-white">₹{ticket.prize?.toLocaleString('en-IN') || '0'}</p>
-          <p className="text-white/70 text-xs mt-2">{ticket.gameName} • #{ticket._id?.slice(-6) || '000000'}</p>
+          <p className="text-white/70 text-xs mt-2">{ticket.gameName} • #{ticket._id?.toString().slice(-6) || '000000'}</p>
         </div>
 
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-6">
@@ -61,10 +95,10 @@ export default function ClaimDetails() {
               <User size={28} className="text-orange-500" />
             </div>
             <div>
-              <p className="font-bold text-gray-800">{ticket.agent?.name || 'Agent Name'}</p>
+              <p className="font-bold text-gray-800">{ticket.agent?.name || 'Your Agent'}</p>
               <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                 <MapPin size={12} />
-                <span>{ticket.agent?.location || 'Location'}</span>
+                <span>{ticket.agent?.location || 'Kerala'}</span>
               </div>
             </div>
           </div>

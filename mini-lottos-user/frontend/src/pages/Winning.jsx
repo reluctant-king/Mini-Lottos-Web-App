@@ -83,7 +83,7 @@ export default function Winning() {
           <Trophy size={20} /> View Details
         </button>
         <button
-          onClick={() => toast('Contacting your agent...')}
+          onClick={() => navigate(`/winning/${id}/claim`)}
           className="w-full flex items-center justify-center gap-2 border-2 border-orange-500 text-orange-500 font-bold py-3.5 rounded-xl hover:bg-orange-50 transition-colors"
         >
           <Phone size={20} /> Contact Agent

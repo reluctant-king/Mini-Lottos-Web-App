@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { PartyPopper, Star, Eye, ChevronRight, Sparkles } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useToast } from '../components/Toast';
-import api from '../api/axios';
 
 export default function Home() {
   const { user } = useAuth();
@@ -16,9 +16,15 @@ export default function Home() {
   const [winners, setWinners] = useState([]);
   const [drawTime, setDrawTime] = useState({ hours: 2, minutes: 15 });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   useEffect(() => {
     refreshNotifications();
-    api.get('/draws/upcoming').catch(() => {});
     const winnersData = [
       { name: 'Rajesh K.', prize: 50000, game: 'Super Daily' },
       { name: 'Priya S.', prize: 25000, game: 'Quick 5' },
@@ -41,20 +47,7 @@ export default function Home() {
   return (
     <MobileLayout>
       <div className="px-5 pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Welcome back</p>
-              <p className="font-bold text-gray-800">{user?.name || 'Player'}</p>
-            </div>
-          </div>
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 rounded-full shadow-md">
-            <span className="text-white font-bold text-sm">₹{user?.balance?.toLocaleString('en-IN') || '0'}</span>
-          </div>
-        </div>
+        <TopHeader title={getGreeting()} />
 
         <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-5 mb-6 shadow-lg relative overflow-hidden">
           <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full" />
@@ -117,7 +110,7 @@ export default function Home() {
             <Sparkles size={16} className="text-orange-500" />
             <h2 className="font-bold text-gray-800">Past Winners</h2>
           </div>
-          <button className="text-xs text-orange-500 font-medium flex items-center gap-1">
+          <button onClick={() => navigate('/results')} className="text-xs text-orange-500 font-medium flex items-center gap-1">
             View All <ChevronRight size={14} />
           </button>
         </div>
@@ -140,7 +133,7 @@ export default function Home() {
         </div>
       </div>
 
-      <BottomNav active="Home" badge={false} />
+      <BottomNav />
     </MobileLayout>
   );
 }

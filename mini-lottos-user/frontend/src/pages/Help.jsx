@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, HelpCircle, Ticket, Award, Headphones, Phone, ChevronDown, ChevronUp } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import { useToast } from '../components/Toast';
 
 const faqs = [
@@ -110,7 +111,7 @@ export default function Help() {
         </div>
       </div>
 
-      <BottomNav active="Help" badge={false} />
+      <BottomNav />
     </MobileLayout>
   );
 }

@@ -57,6 +57,7 @@ const verifyOtp = async (req, res) => {
 
     await OTP.deleteOne({ phone });
 
+    // Find existing user — do NOT overwrite saved profile data
     let user = await User.findOne({ phone });
     if (!user) {
       user = await User.create({ phone, name: 'Player' });
@@ -71,7 +72,11 @@ const verifyOtp = async (req, res) => {
         _id: user._id,
         phone: user.phone,
         name: user.name,
+        email: user.email,
         district: user.district,
+        state: user.state,
+        dob: user.dob,
+        gender: user.gender,
         balance: user.balance,
         coins: user.coins,
         agentId: user.agentId,
@@ -86,7 +91,11 @@ const verifyOtp = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    res.json({ success: true, user: req.user });
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.json({ success: true, user });
   } catch (error) {
     console.error('Get me error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -95,17 +104,26 @@ const getMe = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { name, district } = req.body;
-    const updateData = {};
-    if (name !== undefined) updateData.name = name;
-    if (district !== undefined) updateData.district = district;
+    const allowed = ['name', 'email', 'district', 'state', 'dob', 'gender', 'avatar'];
+    const updates = {};
+    allowed.forEach(field => {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    });
 
-    const user = await User.findByIdAndUpdate(req.user._id, updateData, { new: true });
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     res.json({ success: true, user });
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

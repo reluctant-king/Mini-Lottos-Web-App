@@ -1,19 +1,19 @@
 const User = require('../models/User');
 
+const coinRewards = { 1: 3, 2: 2, 3: 5, 4: 2 };
+
 const playGame = async (req, res) => {
   try {
-    const { gameId, coinsEarned } = req.body;
-    if (!coinsEarned || coinsEarned < 1) {
-      return res.status(400).json({ success: false, message: 'Invalid coins earned' });
-    }
+    const { gameId } = req.body;
+    const coins = coinRewards[gameId] || 2;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { $inc: { coins: coinsEarned } },
+      { $inc: { coins } },
       { new: true }
     );
 
-    res.json({ success: true, user });
+    res.json({ success: true, coins, user });
   } catch (error) {
     console.error('Play game error:', error);
     res.status(500).json({ success: false, message: 'Server error' });

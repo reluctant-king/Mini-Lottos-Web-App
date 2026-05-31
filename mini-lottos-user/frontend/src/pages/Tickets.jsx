@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Bell } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import TicketCard from '../components/TicketCard';
 import Loader from '../components/Loader';
 import { useData } from '../context/DataContext';
-import { useToast } from '../components/Toast';
 
 export default function Tickets() {
   const [tab, setTab] = useState('active');
   const navigate = useNavigate();
   const { tickets, refreshTickets } = useData();
-  const toast = useToast();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,21 +26,7 @@ export default function Tickets() {
   return (
     <MobileLayout>
       <div className="px-5 pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-orange-500 rounded-xl w-10 h-10 flex items-center justify-center shadow-md">
-              <Ticket size={20} className="text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-gray-800">My Tickets</h1>
-          </div>
-          <button
-            onClick={() => navigate('/notifications')}
-            className="relative p-2 hover:bg-gray-100 rounded-xl"
-          >
-            <Bell size={22} className="text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
-        </div>
+        <TopHeader title="My Tickets" />
 
         <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
           <button
@@ -91,7 +76,7 @@ export default function Tickets() {
         )}
       </div>
 
-      <BottomNav active="My Tickets" badge={true} />
+      <BottomNav />
     </MobileLayout>
   );
 }

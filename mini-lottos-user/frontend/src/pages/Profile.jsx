@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Edit, Languages, Shield, HelpCircle, LogOut, Camera, ChevronRight, User, DollarSign, Award } from 'lucide-react';
+import { Edit, Languages, Shield, HelpCircle, LogOut, Camera, ChevronRight, DollarSign, Award, Mail, MapPin, Calendar, User as UserIcon } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 
@@ -22,13 +23,13 @@ export default function Profile() {
   const handleMenuAction = (action) => {
     switch (action) {
       case 'edit':
-        toast('Edit profile coming soon');
+        navigate('/profile/edit');
         break;
       case 'lang':
         toast('Language: English');
         break;
       case 'privacy':
-        toast('Privacy & Security settings');
+        navigate('/profile/privacy');
         break;
       case 'help':
         navigate('/help');
@@ -41,23 +42,13 @@ export default function Profile() {
   const handleLogout = () => {
     logout();
     toast('Logged out successfully');
-    navigate('/login');
+    navigate('/');
   };
 
   return (
     <MobileLayout>
       <div className="px-5 pt-6">
-        <div className="flex items-center justify-between mb-8">
-          <div className="w-8" />
-          <h1 className="text-lg font-bold text-gray-800">Profile</h1>
-          <button
-            onClick={() => navigate('/notifications')}
-            className="relative p-2 hover:bg-gray-100 rounded-xl"
-          >
-            <Bell size={22} className="text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
-        </div>
+        <TopHeader title="My Profile" showAvatar={false} showLocation={false} />
 
         <div className="flex flex-col items-center mb-8">
           <div className="relative w-24 h-24 mb-4">
@@ -89,6 +80,13 @@ export default function Profile() {
           </div>
         </div>
 
+        <div className="mx-0 mb-6 bg-white rounded-2xl shadow divide-y divide-gray-100">
+          <DetailRow icon={Mail} label="Email" value={user?.email || 'Not set'} />
+          <DetailRow icon={MapPin} label="Location" value={`${user?.district || 'Kochi'}, ${user?.state || 'Kerala'}`} />
+          <DetailRow icon={Calendar} label="Date of Birth" value={user?.dob ? new Date(user.dob).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : 'Not set'} />
+          <DetailRow icon={UserIcon} label="Gender" value={user?.gender || 'Not set'} />
+        </div>
+
         <div className="space-y-1 mb-8">
           {menuItems.map((item, i) => {
             const Icon = item.icon;
@@ -115,7 +113,7 @@ export default function Profile() {
           <div className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <Bell size={20} className="text-gray-600" />
+                <UserIcon size={20} className="text-gray-600" />
               </div>
               <span className="font-medium text-gray-700">Notifications</span>
             </div>
@@ -148,7 +146,21 @@ export default function Profile() {
         </div>
       </div>
 
-      <BottomNav active="Profile" badge={false} />
+      <BottomNav />
     </MobileLayout>
+  );
+}
+
+function DetailRow({ icon: Icon, label, value }) {
+  return (
+    <div className="flex items-center gap-3 p-4">
+      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+        <Icon size={18} className="text-gray-600" />
+      </div>
+      <div className="flex-1">
+        <p className="text-xs text-gray-500">{label}</p>
+        <p className="font-semibold text-gray-800">{value}</p>
+      </div>
+    </div>
   );
 }

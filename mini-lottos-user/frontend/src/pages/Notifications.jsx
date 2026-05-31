@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Award, Bell, Gift, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Award, Bell, Gift, Sparkles, TrendingUp, CheckCheck } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
 import { useData } from '../context/DataContext';
@@ -43,11 +43,24 @@ export default function Notifications() {
       await api.delete('/notifications');
       setList([]);
       toast('Notifications cleared', 'success');
-    } catch (err) {
+    } catch {
       setList([]);
       toast('Notifications cleared', 'success');
     }
   };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.put('/notifications/read-all');
+      setList((prev) => prev.map((n) => ({ ...n, read: true })));
+      toast('All marked as read', 'success');
+    } catch {
+      setList((prev) => prev.map((n) => ({ ...n, read: true })));
+      toast('All marked as read', 'success');
+    }
+  };
+
+  const hasUnread = list.some((n) => !n.read);
 
   return (
     <MobileLayout>
@@ -57,14 +70,24 @@ export default function Notifications() {
             <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl">
               <ArrowLeft size={24} className="text-gray-700" />
             </button>
-            <h1 className="text-lg font-bold text-gray-800">Notifications</h1>
+            <h1 className="text-lg font-bold text-gray-800">Alerts</h1>
           </div>
-          <button
-            onClick={handleClear}
-            className="text-sm font-medium text-orange-500 hover:text-orange-600"
-          >
-            Clear
-          </button>
+          <div className="flex items-center gap-2">
+            {hasUnread && (
+              <button
+                onClick={handleMarkAllRead}
+                className="text-sm font-medium text-blue-500 hover:text-blue-600 flex items-center gap-1"
+              >
+                <CheckCheck size={16} /> Read
+              </button>
+            )}
+            <button
+              onClick={handleClear}
+              className="text-sm font-medium text-orange-500 hover:text-orange-600"
+            >
+              Clear
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -80,7 +103,7 @@ export default function Notifications() {
               const Icon = style.icon;
               return (
                 <div
-                  key={n.id}
+                  key={n._id || n.id}
                   className={`bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 ${style.border} p-4 relative`}
                 >
                   <div className="flex items-start gap-3">
@@ -107,16 +130,7 @@ export default function Notifications() {
         )}
       </div>
 
-      <BottomNav
-        active="Alerts"
-        tabs={[
-          { name: 'Home', path: '/home', icon: 'Home' },
-          { name: 'Tickets', path: '/tickets', icon: 'Ticket' },
-          { name: 'Alerts', path: '/notifications', icon: 'Bell' },
-          { name: 'Rewards', path: '/rewards', icon: 'Gift' },
-          { name: 'Help', path: '/help', icon: 'HelpCircle' },
-        ]}
-      />
+      <BottomNav />
     </MobileLayout>
   );
 }

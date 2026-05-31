@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Ticket } from 'lucide-react';
+import { ArrowLeft, Ticket, MessageSquare, Lock, Clock } from 'lucide-react';
 import MobileLayout from '../components/MobileLayout';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
@@ -13,6 +13,7 @@ export default function Verify() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const phone = searchParams.get('phone') || '';
+  const debugOtp = searchParams.get('debug') || '';
   const { verifyOtp, sendOtp } = useAuth();
   const toast = useToast();
 
@@ -22,6 +23,12 @@ export default function Verify() {
       return () => clearInterval(interval);
     }
   }, [resendTimer]);
+
+  useEffect(() => {
+    if (debugOtp && debugOtp.length === 4) {
+      setCode(debugOtp.split(''));
+    }
+  }, [debugOtp]);
 
   const handleChange = (index, value) => {
     if (value && !/^\d+$/.test(value)) return;
@@ -48,8 +55,9 @@ export default function Verify() {
     setLoading(true);
     try {
       await verifyOtp(phone, otp);
+      console.log('%c✅ Login successful!', 'color: green; font-weight: bold; font-size: 14px;');
       toast('Login successful!', 'success');
-      navigate('/home');
+      navigate('/home', { replace: true });
     } catch (err) {
       toast(err.response?.data?.message || 'Invalid OTP', 'error');
     } finally {
@@ -74,14 +82,18 @@ export default function Verify() {
           <ArrowLeft size={24} className="text-gray-700" />
         </button>
       </div>
-      <div className="flex flex-col items-center px-6 pt-8">
+      <div className="flex flex-col items-center px-6 pt-6">
         <h1 className="text-lg font-bold text-gray-800 mb-2">Mini Lottos</h1>
         <div className="bg-orange-500 rounded-xl w-16 h-16 flex items-center justify-center mb-6 shadow-lg">
           <Ticket size={28} className="text-white" />
         </div>
 
         <h2 className="text-xl font-bold text-gray-800">Verification Code</h2>
-        <p className="text-gray-500 text-sm mt-2 mb-8">Enter the 4-digit code sent to +91 {phone}</p>
+        <p className="text-gray-500 text-sm mt-2 mb-4 text-center">Enter the 4-digit code sent to +91 {phone}</p>
+
+        <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full text-xs font-semibold mb-6">
+          <MessageSquare size={12} /> Check browser console for OTP
+        </div>
 
         <div className="flex gap-3 mb-8">
           {code.map((digit, i) => (
@@ -101,15 +113,17 @@ export default function Verify() {
         <button
           onClick={handleVerify}
           disabled={loading || code.join('').length !== 4}
-          className="w-full max-w-sm bg-orange-500 text-white font-bold py-3.5 rounded-xl text-base hover:bg-orange-600 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-orange-200 mb-6"
+          className="w-full max-w-sm bg-orange-500 text-white font-bold py-3.5 rounded-xl text-base hover:bg-orange-600 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-orange-200 mb-6 flex items-center justify-center gap-2"
         >
-          {loading ? 'Verifying...' : 'Verify'}
+          <Lock size={18} /> {loading ? 'Verifying...' : 'Verify & Login'}
         </button>
 
         <div className="flex items-center gap-2 mb-4">
           <span className="text-sm text-gray-500">Didn't receive code?</span>
           {resendTimer > 0 ? (
-            <span className="text-sm font-medium text-gray-400">Resend in {resendTimer}s</span>
+            <span className="text-sm font-medium text-gray-400 flex items-center gap-1">
+              <Clock size={14} /> Resend in {resendTimer}s
+            </span>
           ) : (
             <button onClick={handleResend} className="text-sm font-medium text-orange-500">
               Resend OTP
@@ -117,7 +131,7 @@ export default function Verify() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-gray-400 mt-4">
+        <div className="flex items-center gap-2 text-gray-400 mt-2">
           <Ticket size={14} />
           <span className="text-xs">Get help via phone</span>
         </div>

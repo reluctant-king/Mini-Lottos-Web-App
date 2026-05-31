@@ -9,8 +9,8 @@ const generateToken = (id) => {
 const sendOtp = async (req, res) => {
   try {
     const { phone } = req.body;
-    if (!phone) {
-      return res.status(400).json({ success: false, message: 'Phone number is required' });
+    if (!phone || phone.length !== 10) {
+      return res.status(400).json({ success: false, message: 'Valid 10-digit phone number required' });
     }
 
     const code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -18,15 +18,28 @@ const sendOtp = async (req, res) => {
 
     await OTP.findOneAndUpdate(
       { phone },
-      { code, expiresAt },
+      { phone, code, expiresAt },
       { upsert: true, new: true }
     );
 
-    console.log(`\n📱 ═══════════════════════════════`);
+    console.log(`\n📱 ═══════════════════════════════════════════`);
     console.log(`   OTP for ${phone}: ${code}`);
-    console.log(`═══════════════════════════════════\n`);
+    console.log(`   Expires: ${expiresAt.toLocaleTimeString()}`);
+    console.log(`═══════════════════════════════════════════════\n`);
 
-    res.json({ success: true, message: 'OTP sent successfully' });
+    const isDevMode = process.env.NODE_ENV !== 'production' || process.env.SHOW_OTP === 'true';
+
+    const response = {
+      success: true,
+      message: 'OTP sent successfully',
+    };
+
+    if (isDevMode) {
+      response.debugOtp = code;
+      response.debugMessage = `Demo OTP (visible in dev mode): ${code}`;
+    }
+
+    res.json(response);
   } catch (error) {
     console.error('Send OTP error:', error);
     res.status(500).json({ success: false, message: 'Server error' });

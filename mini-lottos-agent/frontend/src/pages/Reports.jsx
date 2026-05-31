@@ -1,19 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Bell, TrendingUp, TrendingDown, Banknote, Home, Users, Ticket, Settings2, Menu } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Banknote } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { useToast } from '../components/Toast';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import Loader from '../components/Loader';
 import api from '../api/axios';
-
-const navTabs = [
-  { name: 'Home', path: '/dashboard', icon: Home },
-  { name: 'Users', path: '/register-user', icon: Users },
-  { name: 'Reports', path: '/reports', icon: BarChart3 },
-  { name: 'Settings', path: '/settings', icon: Settings2 },
-];
 
 const dailyData = [
   { time: '6am', sales: 120 }, { time: '8am', sales: 200 }, { time: '10am', sales: 350 },
@@ -30,7 +23,6 @@ const weeklyData = [
 
 export default function Reports() {
   const navigate = useNavigate();
-  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState({ daily: dailyData, weekly: weeklyData });
   const [stats, setStats] = useState({
@@ -46,14 +38,20 @@ export default function Reports() {
           api.get('/reports/sales?period=daily'),
           api.get('/reports/sales?period=weekly'),
         ]);
-        if (dailyRes.data?.sales) setSalesData((prev) => ({ ...prev, daily: dailyRes.data.sales }));
-        if (weeklyRes.data?.sales) setSalesData((prev) => ({ ...prev, weekly: weeklyRes.data.sales }));
+        if (dailyRes.data?.data) {
+          const daily = dailyRes.data.data.map((d) => ({ time: d.label, sales: d.value }));
+          setSalesData((prev) => ({ ...prev, daily }));
+        }
+        if (weeklyRes.data?.data) {
+          const weekly = weeklyRes.data.data.map((d) => ({ day: d.label, sales: d.value }));
+          setSalesData((prev) => ({ ...prev, weekly }));
+        }
         setStats({
-          ticketsToday: dailyRes.data?.totalTickets || 128,
-          weeklySales: weeklyRes.data?.totalSales || 12400,
-          miniLottoEntries: dailyRes.data?.miniLottoEntries || 45,
+          ticketsToday: dailyRes.data?.data?.reduce((s, d) => s + d.value, 0) || 128,
+          weeklySales: weeklyRes.data?.data?.reduce((s, d) => s + d.value, 0) || 12400,
+          miniLottoEntries: 45,
         });
-      } catch (err) {
+      } catch {
         setStats({ ticketsToday: 128, weeklySales: 12400, miniLottoEntries: 45 });
       } finally {
         setLoading(false);
@@ -66,18 +64,9 @@ export default function Reports() {
 
   return (
     <MobileLayout>
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={() => navigate('/settings')}>
-            <Menu size={22} color="#374151" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">Sales Summary</h1>
-          <button className="relative">
-            <Bell size={22} color="#374151" />
-            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white" />
-          </button>
-        </div>
+      <TopHeader title="Sales Summary" />
 
+      <div className="px-5 pt-5 pb-4">
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center gap-1 mb-2">
@@ -138,7 +127,7 @@ export default function Reports() {
         </div>
       </div>
 
-      <BottomNav active="Reports" tabs={navTabs} />
+      <BottomNav />
     </MobileLayout>
   );
 }

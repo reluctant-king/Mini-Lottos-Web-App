@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Zap, Check, Ticket } from 'lucide-react';
+import { Zap, Check, Ticket } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import MobileLayout from '../components/MobileLayout';
+import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import api from '../api/axios';
 
 export default function ScanTicket() {
@@ -14,7 +16,7 @@ export default function ScanTicket() {
   const handleSimulateScan = async () => {
     setScanning(true);
     try {
-      const res = await api.post('/tickets/scan', { qrData: 'SIMULATED_SCAN' });
+      const res = await api.get('/tickets/scan');
       setResult(res.data.ticket || res.data);
       toast('Ticket scanned successfully!');
     } catch (err) {
@@ -27,7 +29,7 @@ export default function ScanTicket() {
 
   const handleContinue = () => {
     if (!result) return;
-    if (result.isWinner || result.status === 'winner') {
+    if (result.status === 'won') {
       navigate(`/winner-alert/${result.id || result._id}`);
     } else {
       navigate('/tickets');
@@ -36,14 +38,9 @@ export default function ScanTicket() {
 
   return (
     <MobileLayout>
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center">
-            <ArrowLeft size={20} color="#374151" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">Scan Ticket</h1>
-        </div>
+      <TopHeader title="Scan Ticket" showBack showAvatar={false} showLocation={false} />
 
+      <div className="px-5 pt-5 pb-4">
         <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center relative mb-4 overflow-hidden">
           <div className="relative w-64 h-64">
             <div className="absolute top-0 left-0 w-10 h-10 border-l-4 border-t-4 border-primary rounded-tl" />
@@ -103,6 +100,8 @@ export default function ScanTicket() {
           Enter Code Manually
         </p>
       </div>
+
+      <BottomNav />
     </MobileLayout>
   );
 }

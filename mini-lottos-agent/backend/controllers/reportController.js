@@ -57,21 +57,7 @@ const getSales = async (req, res) => {
 
         const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
 
-        let displayLabel;
-        if (h === 0) displayLabel = '6am';
-        else if (h === 2) displayLabel = '8am';
-        else if (h === 4) displayLabel = '10am';
-        else if (h === 6) displayLabel = '12pm';
-        else if (h === 8) displayLabel = '2pm';
-        else if (h === 10) displayLabel = '4pm';
-        else if (h === 12) displayLabel = '6pm';
-        else if (h === 14) displayLabel = '8pm';
-        else if (h === 16) displayLabel = '10pm';
-        else if (h === 18) displayLabel = '12am';
-        else if (h === 20) displayLabel = '2am';
-        else if (h === 22) displayLabel = '4am';
-
-        data.push({ label: displayLabel, value: count * 200 });
+        data.push({ label, value: count * 200 });
       }
 
       res.json({ period: 'daily', labels: data.map(d => d.label), values: data.map(d => d.value), data });

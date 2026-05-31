@@ -21,18 +21,21 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { agentId: agent.agentId, name: agent.name, photo: agent.photo },
+      { _id: agent._id, agentId: agent.agentId, name: agent.name, photo: agent.photo },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
 
     res.json({
       token,
       agent: {
+        _id: agent._id,
         agentId: agent.agentId,
         name: agent.name,
+        email: agent.email,
         phone: agent.phone,
         district: agent.district,
+        state: agent.state,
         photo: agent.photo,
         ticketsSoldToday: agent.ticketsSoldToday,
         totalSales: agent.totalSales
@@ -55,4 +58,28 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { login, getMe };
+const updateProfile = async (req, res) => {
+  try {
+    const allowed = ['name', 'email', 'phone', 'district', 'state', 'photo'];
+    const updates = {};
+    allowed.forEach(f => {
+      if (req.body[f] !== undefined) updates[f] = req.body[f];
+    });
+
+    const agent = await Agent.findOneAndUpdate(
+      { agentId: req.agent.agentId },
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!agent) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    res.json(agent);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+module.exports = { login, getMe, updateProfile };

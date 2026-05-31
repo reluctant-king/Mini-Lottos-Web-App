@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Ticket, Hash, Check, ChevronRight } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import MobileLayout from '../components/MobileLayout';
+import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import api from '../api/axios';
 
 export default function CreateEntry() {
@@ -26,8 +28,8 @@ export default function CreateEntry() {
     try {
       const res = await api.post('/tickets/create', {
         entries,
-        category: category === 'basic' ? 'Basic Entry ₹5' : 'Premium Entry ₹10',
-        amount: total,
+        category: 'Mini Lottos',
+        price: total,
       });
       localStorage.setItem('pending_ticket', res.data.ticket?.id || res.data.id || res.data.ticketId);
       toast('Entry created! Now link to a user.');
@@ -41,14 +43,9 @@ export default function CreateEntry() {
 
   return (
     <MobileLayout>
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center">
-            <ArrowLeft size={20} color="#374151" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">Mini Lottos Entry</h1>
-        </div>
+      <TopHeader title="Mini Lottos Entry" showBack showAvatar={false} showLocation={false} />
 
+      <div className="px-5 pt-5 pb-4">
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-5 mb-6 text-white">
           <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
             <Ticket size={22} color="white" />
@@ -128,6 +125,8 @@ export default function CreateEntry() {
           AUTHORIZED GOVERNMENT LOTTERY AGENT PORTAL
         </p>
       </div>
+
+      <BottomNav />
     </MobileLayout>
   );
 }

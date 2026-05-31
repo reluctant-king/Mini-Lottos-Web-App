@@ -5,8 +5,8 @@ const register = async (req, res) => {
   try {
     const { name, phone, district } = req.body;
 
-    if (!phone) {
-      return res.status(400).json({ message: 'Phone number is required' });
+    if (!name || !phone || !district) {
+      return res.status(400).json({ message: 'Name, phone, and district are required' });
     }
 
     const existingUser = await User.findOne({ phone });
@@ -14,32 +14,31 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'User with this phone number already exists' });
     }
 
+    const randomNum = Math.floor(1000000 + Math.random() * 9000000);
+    const userIdCode = String(randomNum).slice(0, 4) + '-' + String(randomNum).slice(4);
+
     const user = await User.create({
-      name: name || 'Player',
+      name,
       phone,
-      district: district || '',
+      district,
+      state: 'Kerala',
+      userIdCode,
       agentId: req.agent.agentId
     });
 
-    const phoneStr = phone.toString();
-    const formattedId = phoneStr.length >= 7
-      ? phoneStr.slice(0, 4) + '-' + phoneStr.slice(4, 7)
-      : phoneStr;
-
     res.status(201).json({
-      userId: formattedId,
+      success: true,
+      message: 'User registered successfully',
       user: {
         _id: user._id,
-        phone: user.phone,
+        userIdCode: user.userIdCode,
         name: user.name,
-        district: user.district,
-        balance: user.balance,
-        coins: user.coins,
-        createdAt: user.createdAt
+        phone: user.phone,
+        district: user.district
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -67,4 +66,15 @@ const search = async (req, res) => {
   }
 };
 
-module.exports = { register, search };
+const listAgentUsers = async (req, res) => {
+  try {
+    const users = await User.find({ agentId: req.agent.agentId })
+      .select('name phone district userIdCode createdAt balance')
+      .sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { register, search, listAgentUsers };

@@ -1,19 +1,15 @@
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Ticket, User, Hash, Activity, Printer, Home, Users, BarChart3, Settings2 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CheckCircle, Ticket, User, Hash, Activity, Printer } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
-
-const navTabs = [
-  { name: 'Home', path: '/dashboard', icon: Home },
-  { name: 'Users', path: '/register-user', icon: Users },
-  { name: 'Reports', path: '/reports', icon: BarChart3 },
-  { name: 'Settings', path: '/settings', icon: Settings2 },
-];
+import TopHeader from '../components/TopHeader';
 
 export default function LinkedSuccess() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
+  const data = location.state || {};
 
   const handlePrint = () => {
     window.print();
@@ -21,14 +17,9 @@ export default function LinkedSuccess() {
 
   return (
     <MobileLayout>
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center">
-            <ArrowLeft size={20} color="#374151" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">Ticket Linked</h1>
-        </div>
+      <TopHeader title="Ticket Linked" showBack showAvatar={false} showLocation={false} />
 
+      <div className="px-5 pt-5 pb-4">
         <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center mb-6">
           <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
             <CheckCircle size={36} color="#059669" />
@@ -44,28 +35,28 @@ export default function LinkedSuccess() {
                 <Ticket size={18} color="#6B7280" />
                 <span className="text-sm font-medium text-gray-500">Ticket #</span>
               </div>
-              <span className="text-sm font-bold text-gray-900">TKT-2024-001</span>
+              <span className="text-sm font-bold text-gray-900">{data.ticketNumber || 'TKT-2024-001'}</span>
             </div>
             <div className="px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <User size={18} color="#6B7280" />
-                <span className="text-sm font-medium text-gray-500">User ID</span>
+                <span className="text-sm font-medium text-gray-500">User</span>
               </div>
-              <span className="text-sm font-bold text-gray-900">USR-0001</span>
+              <span className="text-sm font-bold text-gray-900">{data.userName || data.userPhone || 'USR-0001'}</span>
             </div>
             <div className="px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Hash size={18} color="#6B7280" />
                 <span className="text-sm font-medium text-gray-500">Entries</span>
               </div>
-              <span className="text-sm font-bold text-gray-900">4</span>
+              <span className="text-sm font-bold text-gray-900">{data.entries || '1'}</span>
             </div>
             <div className="px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Activity size={18} color="#6B7280" />
                 <span className="text-sm font-medium text-gray-500">Entry Value</span>
               </div>
-              <span className="text-sm font-bold text-gray-900">₹5</span>
+              <span className="text-sm font-bold text-gray-900">₹{data.price || '5'}</span>
             </div>
             <div className="px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -99,7 +90,7 @@ export default function LinkedSuccess() {
         </button>
       </div>
 
-      <BottomNav active="Reports" tabs={navTabs} />
+      <BottomNav />
     </MobileLayout>
   );
 }

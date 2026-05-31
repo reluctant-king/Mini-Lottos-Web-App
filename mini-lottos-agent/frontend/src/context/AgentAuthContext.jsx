@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
 const AgentAuthContext = createContext();
@@ -8,30 +7,6 @@ export function AgentAuthProvider({ children }) {
   const [agent, setAgent] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('ml_agent_token'));
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (token) {
-      api.get('/auth/me')
-        .then((res) => setAgent(res.data.agent || res.data))
-        .catch(() => {
-          localStorage.removeItem('ml_agent_token');
-          setToken(null);
-          setAgent(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
-
-  const login = useCallback(async (agentId, password) => {
-    const res = await api.post('/auth/login', { agentId, password });
-    const { token: newToken, agent: agentData } = res.data;
-    localStorage.setItem('ml_agent_token', newToken);
-    setToken(newToken);
-    setAgent(agentData);
-    return agentData;
-  }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('ml_agent_token');
@@ -47,6 +22,34 @@ export function AgentAuthProvider({ children }) {
       logout();
     }
   }, [logout]);
+
+  useEffect(() => {
+    const init = async () => {
+      const t = localStorage.getItem('ml_agent_token');
+      if (t) {
+        try {
+          const res = await api.get('/auth/me');
+          setAgent(res.data.agent || res.data);
+          setToken(t);
+        } catch {
+          localStorage.removeItem('ml_agent_token');
+          setToken(null);
+          setAgent(null);
+        }
+      }
+      setLoading(false);
+    };
+    init();
+  }, []);
+
+  const login = useCallback(async (agentId, password) => {
+    const res = await api.post('/auth/login', { agentId, password });
+    const { token: newToken, agent: agentData } = res.data;
+    localStorage.setItem('ml_agent_token', newToken);
+    setToken(newToken);
+    setAgent(agentData);
+    return agentData;
+  }, []);
 
   return (
     <AgentAuthContext.Provider value={{ agent, token, loading, login, logout, refreshAgent }}>

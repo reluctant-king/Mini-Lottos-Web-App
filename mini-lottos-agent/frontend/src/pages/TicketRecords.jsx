@@ -1,20 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Ticket, ChevronRight, Home, Users, BarChart3 } from 'lucide-react';
+import { Search, Ticket, ChevronRight } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import Loader from '../components/Loader';
 import api from '../api/axios';
 
-const navTabs = [
-  { name: 'Home', path: '/dashboard', icon: Home },
-  { name: 'Tickets', path: '/tickets', icon: Ticket },
-  { name: 'Users', path: '/register-user', icon: Users },
-  { name: 'Reports', path: '/reports', icon: BarChart3 },
-];
-
-const filters = ['All', 'Active', 'Completed', 'Winner'];
+const filters = ['All', 'Active', 'Completed', 'Winners'];
 
 const statusColors = {
   active: 'bg-green-100 text-green-700',
@@ -37,7 +31,7 @@ export default function TicketRecords() {
         const status = activeFilter === 'All' ? '' : activeFilter.toLowerCase();
         const res = await api.get(`/tickets?status=${status}`);
         setTickets(res.data.tickets || res.data || []);
-      } catch (err) {
+      } catch {
         setTickets([]);
         toast('Failed to load tickets');
       } finally {
@@ -58,14 +52,9 @@ export default function TicketRecords() {
 
   return (
     <MobileLayout>
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center">
-            <ArrowLeft size={20} color="#374151" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">Ticket Records</h1>
-        </div>
+      <TopHeader title="Ticket Records" showBack showAvatar={false} showLocation={false} />
 
+      <div className="px-5 pt-5 pb-4">
         <div className="relative mb-4">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -97,7 +86,7 @@ export default function TicketRecords() {
           <Loader />
         ) : filteredTickets.length === 0 ? (
           <div className="bg-gray-50 rounded-2xl p-8 text-center">
-            <Ticket size={40} color="#D1D5DB" className="mx-auto mb-3" />
+            <Ticket size={40} color="#9CA3AF" className="mx-auto mb-3" />
             <p className="text-sm text-gray-400 font-medium">No tickets found</p>
           </div>
         ) : (
@@ -122,7 +111,7 @@ export default function TicketRecords() {
                       <p className="font-medium">Category: {ticket.category || 'Mini Lotto'}</p>
                     </div>
                     <button
-                      onClick={() => toast('View ticket details')}
+                      onClick={() => navigate(`/tickets/${ticket._id || ticket.id}`)}
                       className="flex items-center gap-1 text-primary text-[10px] font-bold"
                     >
                       View Details <ChevronRight size={12} />
@@ -135,7 +124,7 @@ export default function TicketRecords() {
         )}
       </div>
 
-      <BottomNav active="Tickets" tabs={navTabs} />
+      <BottomNav />
     </MobileLayout>
   );
 }

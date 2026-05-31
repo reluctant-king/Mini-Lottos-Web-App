@@ -16,11 +16,19 @@ const markRead = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const alert = await WinnerAlert.findByIdAndUpdate(
+    let alert = await WinnerAlert.findByIdAndUpdate(
       id,
       { read: true },
       { new: true }
     );
+
+    if (!alert) {
+      alert = await WinnerAlert.findOneAndUpdate(
+        { ticketId: id },
+        { read: true },
+        { new: true }
+      );
+    }
 
     if (!alert) {
       return res.status(404).json({ message: 'Alert not found' });

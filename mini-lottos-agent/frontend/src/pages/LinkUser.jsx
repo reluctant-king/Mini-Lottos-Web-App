@@ -1,17 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, UserPlus, ScanLine, ChevronRight, Users, Link2, Home, BarChart3 } from 'lucide-react';
+import { Search, UserPlus, ScanLine, ChevronRight } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import MobileLayout from '../components/MobileLayout';
 import BottomNav from '../components/BottomNav';
+import TopHeader from '../components/TopHeader';
 import api from '../api/axios';
-
-const navTabs = [
-  { name: 'Home', path: '/dashboard', icon: Home },
-  { name: 'Users', path: '/register-user', icon: Users },
-  { name: 'Link', path: '/link', icon: Link2 },
-  { name: 'Reports', path: '/reports', icon: BarChart3 },
-];
 
 export default function LinkUser() {
   const navigate = useNavigate();
@@ -28,7 +22,7 @@ export default function LinkUser() {
     try {
       const res = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
       const user = res.data.user || res.data;
-      if (!user || !user.id) {
+      if (!user || !user._id) {
         toast('User not found');
         return;
       }
@@ -38,10 +32,19 @@ export default function LinkUser() {
         navigate('/create-entry');
         return;
       }
-      await api.post('/tickets/link', { ticketId, userId: user.id || user._id });
+      const linkRes = await api.post('/tickets/link', { ticketId, userId: user._id });
       localStorage.removeItem('pending_ticket');
       toast('Ticket linked successfully!');
-      navigate('/linked-success');
+      const linked = linkRes.data.ticket || linkRes.data;
+      navigate('/linked-success', {
+        state: {
+          ticketNumber: linked.ticketNumber,
+          userName: user.name,
+          userPhone: user.phone,
+          entries: linked.entries || 1,
+          price: linked.price || 5,
+        }
+      });
     } catch (err) {
       toast(err.response?.data?.message || 'User not found');
     } finally {
@@ -51,14 +54,9 @@ export default function LinkUser() {
 
   return (
     <MobileLayout>
-      <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center">
-            <ArrowLeft size={20} color="#374151" />
-          </button>
-          <h1 className="text-lg font-bold text-gray-900">Link Ticket to User</h1>
-        </div>
+      <TopHeader title="Link Ticket to User" showBack showAvatar={false} showLocation={false} />
 
+      <div className="px-5 pt-5 pb-4">
         <p className="text-xs font-semibold text-gray-500 mb-3 tracking-wide">SELECT USER TYPE</p>
 
         <p className="text-[10px] font-bold text-gray-400 mb-3 tracking-widest">STEP 1 — EXISTING USER</p>
@@ -118,7 +116,7 @@ export default function LinkUser() {
         </button>
       </div>
 
-      <BottomNav active="Link" tabs={navTabs} />
+      <BottomNav />
     </MobileLayout>
   );
 }

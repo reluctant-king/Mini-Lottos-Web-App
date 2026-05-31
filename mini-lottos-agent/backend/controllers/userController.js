@@ -9,15 +9,32 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Name, phone, and district are required' });
     }
 
-    const existingUser = await User.findOne({ phone });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User with this phone number already exists' });
+    let user = await User.findOne({ phone });
+
+    if (user) {
+      if (!user.agentId) {
+        user.agentId = req.agent.agentId;
+        const randomNum = Math.floor(1000000 + Math.random() * 9000000);
+        user.userIdCode = String(randomNum).slice(0, 4) + '-' + String(randomNum).slice(4);
+        await user.save();
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'User found and linked to your agency',
+        user: {
+          _id: user._id,
+          userIdCode: user.userIdCode,
+          name: user.name,
+          phone: user.phone,
+          district: user.district
+        }
+      });
     }
 
     const randomNum = Math.floor(1000000 + Math.random() * 9000000);
     const userIdCode = String(randomNum).slice(0, 4) + '-' + String(randomNum).slice(4);
 
-    const user = await User.create({
+    user = await User.create({
       name,
       phone,
       district,

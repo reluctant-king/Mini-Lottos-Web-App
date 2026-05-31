@@ -26,14 +26,14 @@ export default function LinkUser() {
         toast('User not found');
         return;
       }
-      const ticketId = localStorage.getItem('pending_ticket');
+      const ticketId = localStorage.getItem('pending_ticket_id');
       if (!ticketId) {
         toast('No pending ticket found. Please create an entry first.');
         navigate('/create-entry');
         return;
       }
-      const linkRes = await api.post('/tickets/link', { ticketId, userId: user._id });
-      localStorage.removeItem('pending_ticket');
+      const linkRes = await api.post('/tickets/link', { ticketId, userPhone: user.phone });
+      localStorage.removeItem('pending_ticket_id');
       toast('Ticket linked successfully!');
       const linked = linkRes.data.ticket || linkRes.data;
       navigate('/linked-success', {

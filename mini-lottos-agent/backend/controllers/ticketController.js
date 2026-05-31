@@ -53,10 +53,10 @@ const createEntry = async (req, res) => {
 
 const linkTicket = async (req, res) => {
   try {
-    const { ticketId, userId } = req.body;
+    const { ticketId, userPhone } = req.body;
 
-    if (!ticketId || !userId) {
-      return res.status(400).json({ message: 'ticketId and userId are required' });
+    if (!ticketId || !userPhone) {
+      return res.status(400).json({ message: 'ticketId and userPhone are required' });
     }
 
     const ticket = await Ticket.findById(ticketId);
@@ -72,7 +72,7 @@ const linkTicket = async (req, res) => {
       return res.status(400).json({ message: 'Ticket is already linked' });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({ phone: userPhone });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -81,15 +81,16 @@ const linkTicket = async (req, res) => {
     const drawDate = new Date();
     drawDate.setDate(drawDate.getDate() + 5);
 
-    ticket.userId = userId;
+    ticket.userId = user._id;
     ticket.userPhone = user.phone;
+    ticket.userIdCode = user.userIdCode || '';
     ticket.numbers = numbers;
     ticket.drawDate = drawDate;
     ticket.status = 'active';
     await ticket.save();
 
     await Notification.create({
-      userId,
+      userId: user._id,
       type: 'info',
       title: 'New Ticket Purchased',
       message: `Your agent has purchased a new ticket for you. Ticket #${ticket.ticketNumber}`

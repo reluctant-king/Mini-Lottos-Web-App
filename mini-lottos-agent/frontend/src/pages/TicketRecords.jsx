@@ -107,7 +107,7 @@ export default function TicketRecords() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-[10px] text-gray-500 space-y-0.5">
-                      <p className="font-medium">User: {ticket.userId || ticket.user?.id || 'N/A'}</p>
+                      <p className="font-medium">User: {ticket.userId?.name || ticket.user?.name || ticket.userPhone || 'N/A'}</p>
                       <p className="font-medium">Category: {ticket.category || 'Mini Lotto'}</p>
                     </div>
                     <button

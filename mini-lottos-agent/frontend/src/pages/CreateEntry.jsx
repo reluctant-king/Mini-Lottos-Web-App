@@ -31,7 +31,7 @@ export default function CreateEntry() {
         category: 'Mini Lottos',
         price: total,
       });
-      localStorage.setItem('pending_ticket', res.data.ticket?.id || res.data.id || res.data.ticketId);
+      localStorage.setItem('pending_ticket_id', res.data.ticket?._id || res.data._id || res.data.ticketId);
       toast('Entry created! Now link to a user.');
       navigate('/link');
     } catch (err) {

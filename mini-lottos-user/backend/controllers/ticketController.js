@@ -3,12 +3,23 @@ const Ticket = require('../models/Ticket');
 const getTickets = async (req, res) => {
   try {
     const { status } = req.query;
-    let filter = { userId: req.user._id };
+    let filter = {
+      $or: [
+        { userId: req.user._id },
+        { userPhone: req.user.phone }
+      ]
+    };
 
     if (status === 'active') {
-      filter.status = { $in: ['active', 'pending'] };
+      filter.$or = [
+        { userId: req.user._id, status: { $in: ['active', 'pending'] } },
+        { userPhone: req.user.phone, status: { $in: ['active', 'pending'] } }
+      ];
     } else if (status === 'past') {
-      filter.status = { $in: ['won', 'lost'] };
+      filter.$or = [
+        { userId: req.user._id, status: { $in: ['won', 'lost'] } },
+        { userPhone: req.user.phone, status: { $in: ['won', 'lost'] } }
+      ];
     }
 
     const tickets = await Ticket.find(filter).sort({ drawDate: -1 });
@@ -21,7 +32,13 @@ const getTickets = async (req, res) => {
 
 const getTicket = async (req, res) => {
   try {
-    const ticket = await Ticket.findOne({ _id: req.params.id, userId: req.user._id });
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      $or: [
+        { userId: req.user._id },
+        { userPhone: req.user.phone }
+      ]
+    });
     if (!ticket) {
       return res.status(404).json({ success: false, message: 'Ticket not found' });
     }

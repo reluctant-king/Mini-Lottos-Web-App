@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema({
   balance:  { type: Number, default: 120.50 },
   coins:    { type: Number, default: 18 },
   agentId:  { type: String, default: '' },
+  userIdCode: { type: String, default: '' },
   createdAt:{ type: Date, default: Date.now }
-});
+}, { collection: 'users' });
 
 module.exports = mongoose.model('User', userSchema);

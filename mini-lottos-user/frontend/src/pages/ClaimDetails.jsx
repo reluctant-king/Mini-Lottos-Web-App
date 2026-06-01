@@ -22,7 +22,7 @@ export default function ClaimDetails() {
         let agent = { name: 'Your Agent', phone: '+91 9876543210', location: 'Local Office' };
         if (t.agentId) {
           try {
-            const agentRes = await fetch(`http://localhost:5002/api/auth/me`, {
+            const agentRes = await fetch(`https://mini-lottos-web-app-agent.onrender.com/api/auth/me`, {
               headers: { Authorization: `Bearer ${localStorage.getItem('ml_agent_token')}` }
             });
           } catch {}

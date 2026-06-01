@@ -24,8 +24,8 @@ Opens http://localhost:5174
 ## Test Flow
 1. Open http://localhost:5174
 2. Login with:
-   - Agent ID: **88291020**
-   - Password: **agent123**
+   - Agent ID: **yours**
+   - Password: **yours**
 3. Land on Dashboard → see stats + activity
 4. Tap "Register User" → enter Name, Phone, District → tap "Generate User ID" → see generated ID
 5. Now in User App (port 5173), login with that phone → see new user profile
